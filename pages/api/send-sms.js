@@ -1,34 +1,28 @@
-export const config = {
-  runtime: 'edge', // or remove this line to force Node.js instead
-};
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).send('Only POST requests allowed');
+  }
 
-export default async function handler(req) {
   try {
-    const bodyText = await req.text(); // get raw text
-    const data = JSON.parse(bodyText); // manually parse JSON
-
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     const fromPhone = process.env.TWILIO_PHONE_NUMBER;
-    const toPhone = data.to || process.env.DEFAULT_TO_PHONE;
+    const toPhone = req.body.to || process.env.DEFAULT_TO_PHONE;
+
+    const messageBody =
+      'Thanks for chatting with us today. Reply anytime if you need help!';
 
     const twilio = require('twilio')(accountSid, authToken);
     const message = await twilio.messages.create({
-      body: 'Thanks for chatting with us today. Reply anytime if you need help!',
+      body: messageBody,
       from: fromPhone,
       to: toPhone,
     });
 
     console.log('SMS sent:', message.sid);
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Error:', error);
-    return new Response(JSON.stringify({ error: 'Invalid JSON or server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    console.error('Failed to send SMS:', error);
+    res.status(500).json({ error: 'Invalid JSON or server error' });
   }
 }
