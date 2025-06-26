@@ -1,17 +1,12 @@
-import { buffer } from 'micro';
-
-export const config = {
-  api: {
-    bodyParser: true,
-  },
-};
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).send('Only POST requests allowed');
   }
 
   try {
+    // Log body to verify what you’re getting
+    console.log('BODY:', req.body);
+
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     const fromPhone = process.env.TWILIO_PHONE_NUMBER;
