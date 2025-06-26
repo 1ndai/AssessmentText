@@ -1,31 +1,30 @@
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).send('Only POST requests allowed');
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    // Log body to verify what you’re getting
-    console.log('BODY:', req.body);
+    const { to, message } = req.body;
+
+    if (!to || !message) {
+      return res.status(400).json({ error: "Missing 'to' or 'message'" });
+    }
 
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
-    const fromPhone = process.env.TWILIO_PHONE_NUMBER;
-    const toPhone = req.body.to || process.env.DEFAULT_TO_PHONE;
+    const from = process.env.TWILIO_PHONE_NUMBER;
 
-    const messageBody =
-      'Thanks for chatting with us today. Reply anytime if you need help!';
+    const twilio = require("twilio")(accountSid, authToken);
 
-    const twilio = require('twilio')(accountSid, authToken);
-    const message = await twilio.messages.create({
-      body: messageBody,
-      from: fromPhone,
-      to: toPhone,
+    await twilio.messages.create({
+      to,
+      from,
+      body: message,
     });
 
-    console.log('SMS sent:', message.sid);
-    res.status(200).json({ success: true });
+    return res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Failed to send SMS:', error);
-    res.status(500).json({ error: 'Invalid JSON or server error' });
+    console.error("SMS Error:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
