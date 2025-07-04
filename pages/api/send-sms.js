@@ -3,7 +3,7 @@ function sendSMSFromSelection() {
   const range = sheet.getActiveRange();
   const phoneNumber = range.getValue().toString();
 
-  const url = "https://your-vercel-url.vercel.app/api/send-sms"; // ← Replace this
+  const url = "https://assessment-text.vercel.app/api/send-sms";
   const payload = {
     to: phoneNumber,
     message: "Thanks for your booking! Here’s your link: https://calendly.com/1ndai-info/30min"
