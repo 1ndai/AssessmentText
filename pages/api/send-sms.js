@@ -1,30 +1,26 @@
-// /pages/api/send-sms.js
+function sendSMSFromSelection() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const range = sheet.getActiveRange();
+  const phoneNumber = range.getValue().toString();
 
-import twilio from 'twilio';
+  const url = "https://your-vercel-url.vercel.app/api/send-sms"; // ← Replace this
+  const payload = {
+    to: phoneNumber,
+    message: "Thanks for your booking! Here’s your link: https://calendly.com/1ndai-info/30min"
+  };
 
-const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+  const options = {
+    method: 'POST',
+    contentType: 'application/json',
+    payload: JSON.stringify(payload)
+  };
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Only POST requests allowed' });
-  }
+  const response = UrlFetchApp.fetch(url, options);
+  const result = JSON.parse(response.getContentText());
 
-  const { to, message } = req.body;
-
-  if (!to || !message) {
-    return res.status(400).json({ error: 'Missing "to" or "message" in request body' });
-  }
-
-  try {
-    const twilioResponse = await client.messages.create({
-      body: message,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: to,
-    });
-
-    return res.status(200).json({ success: true, sid: twilioResponse.sid });
-  } catch (error) {
-    console.error('Twilio send error:', error);
-    return res.status(500).json({ error: 'SMS failed', details: error.message });
+  if (result.success) {
+    range.offset(0, 1).setValue("✅ Sent");
+  } else {
+    range.offset(0, 1).setValue("❌ Error");
   }
 }
