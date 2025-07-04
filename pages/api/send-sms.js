@@ -9,12 +9,13 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Only POST requests allowed' });
   }
 
+  const { to, message } = req.body;
+
+  if (!to || !message) {
+    return res.status(400).json({ error: 'Missing "to" or "message" in request body' });
+  }
+
   try {
-    // You can replace this with dynamic lookup logic later
-    const to = process.env.TEST_TO_NUMBER || '+15555555555';
-
-    const message = "Thanks for chatting with us today! Book your AI assessment here: https://calendly.com/1ndai-info/30min";
-
     const twilioResponse = await client.messages.create({
       body: message,
       from: process.env.TWILIO_PHONE_NUMBER,
