@@ -1,16 +1,23 @@
+// /pages/api/send-sms.js
+
 import twilio from 'twilio';
 
-const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+const client = twilio(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Only POST requests allowed' });
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    return res.status(405).json({ error: 'Only GET or POST requests allowed' });
   }
 
-  const { phone_number } = req.body;
+  const phone_number = req.method === 'GET'
+    ? req.query.phone_number || req.query.user_phone // support both
+    : req.body.phone_number || req.body.user_phone;
 
   if (!phone_number) {
-    return res.status(400).json({ error: 'Missing phone_number' });
+    return res.status(400).json([{ error: '1' }, 'Missing phone_number']);
   }
 
   try {
