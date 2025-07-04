@@ -1,5 +1,3 @@
-// /pages/api/send-sms.js
-
 import twilio from 'twilio';
 
 const client = twilio(
@@ -8,16 +6,32 @@ const client = twilio(
 );
 
 export default async function handler(req, res) {
-  if (req.method !== 'GET' && req.method !== 'POST') {
-    return res.status(405).json({ error: 'Only GET or POST requests allowed' });
+  console.log('Request method:', req.method);
+  console.log('Query params:', req.query);
+  console.log('Body:', req.body);
+
+  let phone_number = req.query.user_phone || req.query.phone_number;
+
+  // Also try pulling from body just in case Retell flips formats
+  if (!phone_number && req.body) {
+    if (typeof req.body === 'string') {
+      try {
+        req.body = JSON.parse(req.body);
+      } catch (err) {
+        console.error('Failed to parse body as JSON:', err);
+      }
+    }
+    phone_number = req.body.user_phone || req.body.phone_number;
   }
 
-  const phone_number = req.method === 'GET'
-    ? req.query.phone_number || req.query.user_phone // support both
-    : req.body.phone_number || req.body.user_phone;
-
   if (!phone_number) {
-    return res.status(400).json([{ error: '1' }, 'Missing phone_number']);
+    return res.status(400).json([
+      "1",
+      "2",
+      { error: "3" },
+      "Missing phone_number",
+      "1"
+    ]);
   }
 
   try {
